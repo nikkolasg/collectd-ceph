@@ -120,18 +120,20 @@ class Ceph(object):
         try:
             self.logverbose("Read callback will execute ...")
             stats = self.get_stats()
+            for stat in stats:
+                self.dispatch(stat)
         except Exception as exc:
             collectd.error("%s: failed to get stats :: %s :: %s"
                     % (self.prefix, exc, traceback.format_exc()))
-        self.dispatch(stats)
 
     def get_stats(self):
-        allstats = { self.cluster : {} }
+        allstats = []
         for plugin in self.plugins:
-            pluginStat = plugin.get_stats().copy()
+            pluginStat = plugin.get_stats()
             self.logverbose("plugin %s stats : %s" % (plugin.name,pluginStat))
-            allstats = self.merge_stats(allstats,pluginStat)
-            self.logverbose("all stats : %s" % allstats)
+            allstats.append(pluginStat)
+            #allstats = self.merge_stats(allstats,pluginStat)
+        #self.logverbose("all stats : %s" % allstats)
         return allstats
 
     def logverbose(self, msg):
